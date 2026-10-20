@@ -60,7 +60,7 @@ int dochug(struct monst *mtmp)
 	unsigned char mx,my;
 	struct stole *stmp;
 
-	if(mtmp->cham && !rn2(6)) newcham(mtmp,&mon[rn1(6,2)][rn2(8)]);
+	if(mtmp->cham && !rn2(6)) newcham(mtmp,&mon[rn1(6,2)][rn2(7)]);
 	mdat=mtmp->data;
 #ifndef SMALL
 	if(mdat->mlet == 'V' && !rn2(10)){
@@ -794,7 +794,7 @@ int makemon(struct permonst *ptr)
 	else mtmp->orig_hp=mtmp->mhp=d(ptr->mhd,8);
 	if(ptr->mlet == ':' && !u.ucham) {
 		mtmp->cham=1;
-		newcham(mtmp,&mon[rn1(6,2)][rn2(8)]);
+		newcham(mtmp,&mon[rn1(6,2)][rn2(7)]);
 	}
 	return(0);
 }
