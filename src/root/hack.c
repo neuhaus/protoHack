@@ -1023,7 +1023,7 @@ void done(char *st1)
 				panic("No record file\n");
 			else {
 			/* stick in new entry */
-				for(tmp=8;rec[tmp].points<u.urexp && tmp>-1;
+				for(tmp=8;tmp>=0 && rec[tmp].points<u.urexp;
  tmp--)
 					rec[tmp+1]=rec[tmp];
 				tmp++; /* point to right place */
