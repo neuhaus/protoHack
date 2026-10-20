@@ -194,7 +194,7 @@ extern unsigned moves;
 
 extern int multi;
 
-extern char buf[],nul[];
+extern char buf[100],nul[];
 
 extern char lock[];
 extern char oldux,olduy;
@@ -221,7 +221,7 @@ void domove(void);
 void delmon(struct monst *);
 int hack_pow(int);  /* Original 1982: pow() — renamed for math.h conflict */
 void tele(void);
-void doname(struct obj *, char *);
+void doname(struct obj *, char *, size_t);
 int parse(void);
 #ifdef MAGIC
 void domagic(int);

@@ -177,7 +177,7 @@ void rhack(char cmd)
 			flags.topl=1;
 			for(otmp=invent;otmp && num;otmp=otmp->nobj,num--) ;
 			if(otmp) {
-				doname(otmp,buf);
+				doname(otmp,buf,sizeof(buf));
 				pline("%s",buf);
 			} else pline(DONTH);
 		}
@@ -293,7 +293,7 @@ void rhack(char cmd)
 			} else dodr1(otmp);
 		}
 		strcpy(buf,"You dropped ");
-		doname(fobj,&buf[12]);
+		doname(fobj,&buf[12],sizeof(buf)-12);
 		pline("%s",buf);
 		break;
 	case 'p':
@@ -580,7 +580,7 @@ void rhack(char cmd)
 void were(struct obj *otmp)
 {
 	strcpy(buf,"You were wearing ");
-	doname(otmp,&buf[17]);
+	doname(otmp,&buf[17],sizeof(buf)-17);
 	pline("%s",buf);
 }
 void drink1(struct obj *otmp)

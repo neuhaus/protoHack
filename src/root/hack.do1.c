@@ -593,7 +593,7 @@ void doinv(register char *str)
 	while(otmp) {
 		if(!str || index(str,otmp->olet)) {
 			sprintf(buf,"%c -  ",ilet);
-			doname(otmp,&buf[5]);
+			doname(otmp,&buf[5],sizeof(buf)-5);
 #ifndef SMALL
 			if(flags.step) pline("%s",buf);
 			else {

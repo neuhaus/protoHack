@@ -393,104 +393,112 @@ void tele(void)
  g_at(u.ux,u.uy,fobj) || g_at(u.ux,u.uy,ftrap) || g_at(u.ux,u.uy,fgold));
 	setsee();
 }
-void doname(struct obj *obj, char *buf)
+/* Append without writing beyond the caller's remaining buffer. */
+static void name_cat(char *buf, size_t size, const char *text)
 {
+    size_t used=strlen(buf);
+    if(used<size) strncat(buf,text,size-used-1);
+}
+void doname(struct obj *obj, char *buf, size_t size)
+{
+	char *start=buf;
+	if(!size) return;
+#define NAME_SIZE (size-(size_t)(buf-start))
 	switch(obj->olet) {
 	case '"':
-		strcpy(buf,"The amulet of Frobozz.");
+		snprintf(buf,NAME_SIZE,"The amulet of Frobozz.");
 		break;
 	case '%':
- if(obj->quan>1) sprintf(buf,"%d %ss.",obj->quan,foodnam[obj->otyp]);
-		else sprintf(buf,"a %s.",foodnam[obj->otyp]);
+ if(obj->quan>1) snprintf(buf,NAME_SIZE,"%d %ss.",obj->quan,foodnam[obj->otyp]);
+		else snprintf(buf,NAME_SIZE,"a %s.",foodnam[obj->otyp]);
 		break;
 	case ')':
 		if(obj->known) {
-			if(obj->quan>1) sprintf(buf,"%d %c%d %ss",obj->quan,
+			if(obj->quan>1) snprintf(buf,NAME_SIZE,"%d %c%d %ss",obj->quan,
  obj->minus?'-':'+',obj->spe,wepnam[obj->otyp]);
-			else sprintf(buf,"a %c%d %s",obj->minus?'-':'+',
+			else snprintf(buf,NAME_SIZE,"a %c%d %s",obj->minus?'-':'+',
  obj->spe,wepnam[obj->otyp]);
 		} else {
-			if(obj->quan>1) sprintf(buf,"%d %ss",obj->quan,
+			if(obj->quan>1) snprintf(buf,NAME_SIZE,"%d %ss",obj->quan,
  wepnam[obj->otyp]);
-			else setan(wepnam[obj->otyp],buf);
+			else snprintf(buf,NAME_SIZE,"%s %s",index(vowels,*wepnam[obj->otyp])?"an":"a",wepnam[obj->otyp]);
 		}
-		while(*++buf) ;
-		*buf++='.';
-		*buf=0;
+		while(*buf) buf++;
+		snprintf(buf,NAME_SIZE,".");
 		break;
 	case '[':
-		if(obj->known) sprintf(buf,"a suit of %c%d %s armor",
+		if(obj->known) snprintf(buf,NAME_SIZE,"a suit of %c%d %s armor",
  obj->minus?'-':'+',obj->spe,armnam[obj->otyp-2]);
-		else sprintf(buf,"a suit of %s armor",armnam[obj->otyp-2]);
-		if(obj==uarm) strcat(buf,"  (being worn)");
-		while(*++buf) ;
-		*buf++='.';
-		*buf=0;
+		else snprintf(buf,NAME_SIZE,"a suit of %s armor",armnam[obj->otyp-2]);
+		if(obj==uarm) name_cat(buf,NAME_SIZE,"  (being worn)");
+		while(*buf) buf++;
+		snprintf(buf,NAME_SIZE,".");
 		break;
 	case '!':
 		if(oiden[obj->otyp]&POTN || potcall[obj->otyp]) {
-			if(obj->quan>1) sprintf(buf,"%d potions",obj->quan);
-			else sprintf(buf,"a potion");
+			if(obj->quan>1) snprintf(buf,NAME_SIZE,"%d potions",obj->quan);
+			else snprintf(buf,NAME_SIZE,"a potion");
 			while(*buf) buf++;
 			if(!potcall[obj->otyp])
-				sprintf(buf,OF,pottyp[obj->otyp]);
-			else sprintf(buf,CALL,potcall[obj->otyp]);
+				snprintf(buf,NAME_SIZE,OF,pottyp[obj->otyp]);
+			else snprintf(buf,NAME_SIZE,CALL,potcall[obj->otyp]);
 		} else {
-			if(obj->quan>1) sprintf(buf,"%d %s potions.",obj->quan,
+			if(obj->quan>1) snprintf(buf,NAME_SIZE,"%d %s potions.",obj->quan,
  potcol[obj->otyp]);
-			else setan(potcol[obj->otyp],buf),
-				strcat(buf," potion.");
+			else snprintf(buf,NAME_SIZE,"%s %s",index(vowels,*potcol[obj->otyp])?"an":"a",potcol[obj->otyp]),
+				name_cat(buf,NAME_SIZE," potion.");
 		}
 		break;
 	case '?':
-		if(obj->quan>1) sprintf(buf,"%d scrolls",obj->quan);
-		else strcpy(buf,"a scroll");
+		if(obj->quan>1) snprintf(buf,NAME_SIZE,"%d scrolls",obj->quan);
+		else snprintf(buf,NAME_SIZE,"a scroll");
 		while(*buf) buf++;
-		if(oiden[obj->otyp]&SCRN) sprintf(buf,OF,scrtyp[obj->otyp]);
+		if(oiden[obj->otyp]&SCRN) snprintf(buf,NAME_SIZE,OF,scrtyp[obj->otyp]);
 		else if(scrcall[obj->otyp])
-			sprintf(buf,CALL,scrcall[obj->otyp]);
-		else sprintf(buf," labeled '%s'.",scrnam[obj->otyp]);
+			snprintf(buf,NAME_SIZE,CALL,scrcall[obj->otyp]);
+		else snprintf(buf,NAME_SIZE," labeled '%s'.",scrnam[obj->otyp]);
 		break;
 	case '/':
 		if(oiden[obj->otyp]&WANN)
-			sprintf(buf,"a wand of %s.",wantyp[obj->otyp]);
+			snprintf(buf,NAME_SIZE,"a wand of %s.",wantyp[obj->otyp]);
 		else if(wandcall[obj->otyp])
-			sprintf(buf,"a wand called %s.",wandcall[obj->otyp]);
-		else setan(wannam[obj->otyp],buf),
-			strcat(buf," wand.");
+			snprintf(buf,NAME_SIZE,"a wand called %s.",wandcall[obj->otyp]);
+		else snprintf(buf,NAME_SIZE,"%s %s",index(vowels,*wannam[obj->otyp])?"an":"a",wannam[obj->otyp]),
+			name_cat(buf,NAME_SIZE," wand.");
 		if(obj->known) {
 			while(*buf) buf++;
-			sprintf(buf,"  (%d).",obj->spe);
+			snprintf(buf,NAME_SIZE,"  (%d).",obj->spe);
 		}
 		break;
 	case '=':
 		if(oiden[obj->otyp]&RINN) {
-			if(obj->known) sprintf(buf,"a %c%d ring of %s",
+			if(obj->known) snprintf(buf,NAME_SIZE,"a %c%d ring of %s",
  obj->minus?'-':'+',obj->spe,ringtyp[obj->otyp]);
-			else sprintf(buf,"a ring of %s",ringtyp[obj->otyp]);
+			else snprintf(buf,NAME_SIZE,"a ring of %s",ringtyp[obj->otyp]);
 		} else if(ringcall[obj->otyp])
-			sprintf(buf,"a ring called %s",ringcall[obj->otyp]);
-		else setan(rinnam[obj->otyp],buf),
-			strcat(buf," ring");
-		if(obj==uright) strcat(buf,"  (on right hand)");
-		if(obj==uleft) strcat(buf,"  (on left hand)");
-		while(*++buf) ;
-		*buf++='.';
-		*buf=0;
+			snprintf(buf,NAME_SIZE,"a ring called %s",ringcall[obj->otyp]);
+		else snprintf(buf,NAME_SIZE,"%s %s",index(vowels,*rinnam[obj->otyp])?"an":"a",rinnam[obj->otyp]),
+			name_cat(buf,NAME_SIZE," ring");
+		if(obj==uright) name_cat(buf,NAME_SIZE,"  (on right hand)");
+		if(obj==uleft) name_cat(buf,NAME_SIZE,"  (on left hand)");
+		while(*buf) buf++;
+		snprintf(buf,NAME_SIZE,".");
 		break;
 	case '*':
-		if(obj->quan>1) sprintf(buf,"%d %s gems.",obj->quan,
+		if(obj->quan>1) snprintf(buf,NAME_SIZE,"%d %s gems.",obj->quan,
  potcol[obj->otyp]);
 		else {
-			setan(potcol[obj->otyp],buf);
-			strcat(buf," gem.");
+			snprintf(buf,NAME_SIZE,"%s %s",index(vowels,*potcol[obj->otyp])?"an":"a",potcol[obj->otyp]);
+			name_cat(buf,NAME_SIZE," gem.");
 		}
 		break;
 	default:
-		strcpy(buf,"bug!");
+		snprintf(buf,NAME_SIZE,"bug!");
 	}
-	if(obj==uwep) strcat(buf,"  (weapon in hand)");
+	if(obj==uwep) name_cat(buf,NAME_SIZE,"  (weapon in hand)");
+#undef NAME_SIZE
 }
+
 int parse(void)
 {
 	register char foo;
@@ -711,12 +719,12 @@ case 'p': pline("daminc=%d blind=%d fast=%d confused=%d",
 			if(stmp->sobj) {
 				sprintf(buf,"%s at %d %d stole .",stmp->smon->
  data->mname,stmp->smon->mx,stmp->smon->my);
-				doname(stmp->sobj,index(buf,'.'));
+				doname(stmp->sobj,index(buf,'.'),sizeof(buf)-(size_t)(index(buf,'.')-buf));
 				pline("%s",buf);
 				otmp=stmp->sobj;
 				while((otmp=otmp->nobj)) {
 					strcpy(buf,"and ");
-					doname(otmp,&buf[4]);
+					doname(otmp,&buf[4],sizeof(buf)-4);
 					pline("%s",buf);
 				}
 			}
@@ -734,7 +742,7 @@ case 'p': pline("daminc=%d blind=%d fast=%d confused=%d",
 		tx= *abuf;
 		for(;;) {
 			mkobj(tx);
-			doname(fobj,buf);
+			doname(fobj,buf,sizeof(buf));
 			pline("%s",buf);
 			flags.topl=1;
 			fflush(stdout);
@@ -763,7 +771,7 @@ case 'p': pline("daminc=%d blind=%d fast=%d confused=%d",
 		}
 		fobj->ox=u.ux;
 		fobj->oy=u.uy;
-		doname(fobj,buf);
+		doname(fobj,buf,sizeof(buf));
 		pline("%s",buf);
 		break;
 	case 'C':
@@ -888,7 +896,7 @@ case 'p': pline("daminc=%d blind=%d fast=%d confused=%d",
 			for(otmp=fobj;otmp;otmp=otmp->nobj) {
 				sprintf(buf,"At %d, %d %c%d .",otmp->ox,
  otmp->oy,otmp->minus?'-':'+',otmp->spe);
-				doname(otmp,index(buf,'.'));
+				doname(otmp,index(buf,'.'),sizeof(buf)-(size_t)(index(buf,'.')-buf));
 				pline("%s",buf);
 				curs(otmp->ox,otmp->oy+2);
 				putchar(otmp->olet);
@@ -1255,7 +1263,7 @@ void prinv(struct obj *obj)
 	for(otmp=invent;otmp!=obj;otmp=otmp->nobj)
 		if(++ilet>'z') ilet='A';
 	sprintf(buf,"%c - ",ilet);
-	doname(otmp,&buf[4]);
+	doname(otmp,&buf[4],sizeof(buf)-4);
 	/* Modern: pass name as an argument; it holds player-typed text and pline() treats its first arg as a format */
 	pline("%s",buf);
 }
