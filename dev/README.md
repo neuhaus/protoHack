@@ -71,3 +71,15 @@ appears.
 `sanitize-build.sh`, `ubsan-build.sh` and `valgrind-build.sh` make one-off
 instrumented builds. `static-build.sh`, `package-tarballs.sh` and
 `prepare-release.sh` are for releases.
+
+## Targeted native regression
+
+Choose a C test under `dev/regressions/` and run it from the repository root:
+
+```sh
+python3 dev/run-c-regression.py dev/regressions/CASE.c
+```
+
+Requires Clang, CMake, and Make. It builds the native game with ASan/UBSan
+and exercises the real game functions in a temporary runtime directory.
+Your existing saves and build directories are untouched.

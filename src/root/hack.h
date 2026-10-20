@@ -347,3 +347,9 @@ void doup(void);
 void docall(struct obj *);
 void more(void);
 void dodr1(struct obj *);
+
+/* Message arguments must follow the platform's variadic calling convention. */
+#ifndef MKLEV_BINARY
+void panic(char *, ...);
+void pline(char *, ...);
+#endif
