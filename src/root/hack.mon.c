@@ -770,6 +770,8 @@ int makemon(struct permonst *ptr)
 	int foo;
 
 	mtmp=alloc(sizeof(struct monst));
+	/* newcham() inspects map visibility before the caller places the monster. */
+	mtmp->mx=mtmp->my=0;
 	mtmp->sinv=mtmp->mcan=mtmp->invis=mtmp->cham=mtmp->mstat=mtmp->mspeed=0;
 	if(ptr) {
 		if(!ptr->mlet) {
